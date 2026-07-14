@@ -1,106 +1,226 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Search Algorithms - Python Code</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            padding: 20px;
-        }
-        h1 {
-            text-align: center;
-        }
-        pre {
-            background: #222;
-            color: #0f0;
-            padding: 15px;
-            overflow-x: auto;
-            border-radius: 8px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DAA Experiment 1 - Searching Algorithms</title>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    background:#f2f2f2;
+    margin:0;
+    padding:20px;
+}
+.container{
+    max-width:800px;
+    margin:auto;
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,0.2);
+}
+h1{
+    text-align:center;
+    color:#0077cc;
+}
+input{
+    width:100%;
+    padding:10px;
+    margin:8px 0;
+    font-size:16px;
+}
+button{
+    padding:10px 20px;
+    margin:10px 5px;
+    border:none;
+    color:white;
+    background:#0077cc;
+    cursor:pointer;
+    border-radius:5px;
+}
+button:hover{
+    background:#005fa3;
+}
+pre{
+    background:#222;
+    color:#00ff99;
+    padding:15px;
+    border-radius:8px;
+}
+</style>
+
 </head>
 <body>
 
-<h1>Interpolation Search vs Binary Search</h1>
+<div class="container">
 
-<pre><code>
-import time 
-import random 
-import sys 
+<h1>DAA Experiment 1</h1>
+<h2>Interpolation Search & Binary Search</h2>
 
-def interpolation_search(arr, target): 
-    low, high = 0, len(arr) - 1 
-    comparisons = 0
+<label>Enter Sorted Array (comma separated)</label>
+<input type="text" id="array"
+placeholder="2,5,10,15,23,35,48,60">
 
-    while low <= high and arr[low] <= target <= arr[high]: 
-        comparisons += 1 
-        if low == high: 
-            if arr[low] == target: 
-                return low, comparisons 
-            return -1, comparisons 
+<label>Enter Target</label>
+<input type="number" id="target">
 
-        pos = low + int(((target - arr[low]) * (high - low)) 
-                        / (arr[high] - arr[low])) 
+<button onclick="runBinary()">Binary Search</button>
+<button onclick="runInterpolation()">Interpolation Search</button>
 
-        if arr[pos] == target: 
-            return pos, comparisons 
-        elif arr[pos] < target: 
-            low = pos + 1 
-        else: 
-            high = pos - 1 
+<h3>Output</h3>
 
-    return -1, comparisons 
+<pre id="output"></pre>
 
-def binary_search(arr, target): 
-    low, high = 0, len(arr) - 1 
-    comparisons = 0 
-    while low <= high: 
-        comparisons += 1 
-        mid = (low + high) // 2 
-        if arr[mid] == target: 
-            return mid, comparisons 
-        elif arr[mid] < target: 
-            low = mid + 1 
-        else: 
-            high = mid - 1 
-    return -1, comparisons 
+</div>
 
-def performance_analysis(): 
-    sizes = [1000, 5000, 10000, 50000, 100000] 
-    print(f"{'Size':>10} {'IS Time(ms)':>14} {'BS Time(ms)':>14} " 
-          f"{'IS Comparisons':>16} {'BS Comparisons':>16}") 
-    print('-' * 75) 
+<script>
 
-    for size in sizes: 
-        arr = sorted(random.sample(range(size * 10), size)) 
-        target = arr[random.randint(0, size - 1)] 
+function getArray(){
+    return document.getElementById("array").value
+    .split(",")
+    .map(Number)
+    .filter(x=>!isNaN(x));
+}
 
-        start = time.perf_counter() 
-        for _ in range(100): 
-            idx_is, comp_is = interpolation_search(arr, target) 
-        is_time = (time.perf_counter() - start) / 100 * 1000 
+function binarySearch(arr,target){
 
-        start = time.perf_counter() 
-        for _ in range(100): 
-            idx_bs, comp_bs = binary_search(arr, target) 
-        bs_time = (time.perf_counter() - start) / 100 * 1000 
+    let low=0;
+    let high=arr.length-1;
+    let comparisons=0;
 
-        print(f"{size:>10} {is_time:>14.4f} {bs_time:>14.4f} " 
-              f"{comp_is:>16} {comp_bs:>16}") 
+    while(low<=high){
 
-arr = [2, 5, 10, 15, 23, 35, 48, 60, 75, 90, 105, 120] 
-target = 35 
-idx, comps = interpolation_search(arr, target) 
+        comparisons++;
 
-print(f"Array: {arr}") 
-print(f"Searching for: {target}") 
-print(f"Found at index: {idx}, Comparisons: {comps}")
+        let mid=Math.floor((low+high)/2);
 
-print() 
-performance_analysis()
-</code></pre>
+        if(arr[mid]==target){
+            return {
+                index:mid,
+                comparisons:comparisons
+            };
+        }
+
+        else if(arr[mid]<target){
+            low=mid+1;
+        }
+
+        else{
+            high=mid-1;
+        }
+
+    }
+
+    return{
+        index:-1,
+        comparisons:comparisons
+    };
+
+}
+
+function interpolationSearch(arr,target){
+
+    let low=0;
+    let high=arr.length-1;
+    let comparisons=0;
+
+    while(
+        low<=high &&
+        target>=arr[low] &&
+        target<=arr[high]
+    ){
+
+        comparisons++;
+
+        if(low==high){
+
+            if(arr[low]==target){
+
+                return{
+                    index:low,
+                    comparisons:comparisons
+                };
+
+            }
+
+            break;
+
+        }
+
+        if(arr[high]==arr[low])
+            break;
+
+        let pos=low+Math.floor(
+            ((target-arr[low])*(high-low))/
+            (arr[high]-arr[low])
+        );
+
+        if(arr[pos]==target){
+
+            return{
+                index:pos,
+                comparisons:comparisons
+            };
+
+        }
+
+        if(arr[pos]<target)
+            low=pos+1;
+
+        else
+            high=pos-1;
+
+    }
+
+    return{
+        index:-1,
+        comparisons:comparisons
+    };
+
+}
+
+function runBinary(){
+
+    let arr=getArray();
+    let target=Number(document.getElementById("target").value);
+
+    let result=binarySearch(arr,target);
+
+    document.getElementById("output").innerText=
+`Binary Search
+
+Array : ${arr}
+
+Target : ${target}
+
+Index : ${result.index}
+
+Comparisons : ${result.comparisons}`;
+
+}
+
+function runInterpolation(){
+
+    let arr=getArray();
+    let target=Number(document.getElementById("target").value);
+
+    let result=interpolationSearch(arr,target);
+
+    document.getElementById("output").innerText=
+`Interpolation Search
+
+Array : ${arr}
+
+Target : ${target}
+
+Index : ${result.index}
+
+Comparisons : ${result.comparisons}`;
+
+}
+
+</script>
 
 </body>
 </html>
