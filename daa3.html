@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DAA Experiment 3 - Kruskal & Prim</title>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    background:#f2f2f2;
+    margin:0;
+    padding:20px;
+}
+.container{
+    max-width:900px;
+    margin:auto;
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,.2);
+}
+h1{
+    text-align:center;
+    color:#0066cc;
+}
+textarea{
+    width:100%;
+    height:180px;
+    font-size:16px;
+    padding:10px;
+}
+button{
+    padding:10px 20px;
+    margin:10px 5px;
+    border:none;
+    background:#0066cc;
+    color:white;
+    cursor:pointer;
+    border-radius:5px;
+}
+button:hover{
+    background:#004999;
+}
+pre{
+    background:#222;
+    color:#00ff99;
+    padding:15px;
+    border-radius:8px;
+    white-space:pre-wrap;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>DAA Experiment 3</h1>
+<h2>Kruskal's Algorithm & Prim's Algorithm</h2>
+
+<p>
+Enter one edge per line in the format:
+<b>Source Destination Weight</b>
+</p>
+
+<textarea id="edges">
+0 1 7
+0 3 5
+1 2 8
+1 3 9
+1 4 7
+2 4 5
+3 4 15
+3 5 6
+4 5 8
+4 6 9
+5 6 11
+</textarea>
+
+<br>
+
+<label>Number of Vertices</label>
+<input type="number" id="vertices" value="7">
+
+<br><br>
+
+<button onclick="runKruskal()">Run Kruskal</button>
+<button onclick="runPrim()">Run Prim</button>
+
+<h3>Output</h3>
+
+<pre id="output"></pre>
+
+</div>
+
+<script>
+
+function getEdges(){
+
+    let lines=document.getElementById("edges").value.trim().split("\n");
+
+    let edges=[];
+
+    for(let line of lines){
+
+        let p=line.trim().split(/\s+/).map(Number);
+
+        edges.push({
+            u:p[0],
+            v:p[1],
+            w:p[2]
+        });
+
+    }
+
+    return edges;
+
+}
+
+//----------------------
+// Kruskal
+//----------------------
+
+function find(parent,i){
+
+    if(parent[i]!=i)
+        parent[i]=find(parent,parent[i]);
+
+    return parent[i];
+
+}
+
+function union(parent,rank,x,y){
+
+    let xr=find(parent,x);
+    let yr=find(parent,y);
+
+    if(rank[xr]<rank[yr])
+        parent[xr]=yr;
+
+    else if(rank[xr]>rank[yr])
+        parent[yr]=xr;
+
+    else{
+
+        parent[yr]=xr;
+        rank[xr]++;
+
+    }
+
+}
+
+function runKruskal(){
+
+    let V=parseInt(document.getElementById("vertices").value);
+
+    let edges=getEdges();
+
+    edges.sort((a,b)=>a.w-b.w);
+
+    let parent=[];
+    let rank=[];
+
+    for(let i=0;i<V;i++){
+
+        parent[i]=i;
+        rank[i]=0;
+
+    }
+
+    let result=[];
+    let cost=0;
+
+    for(let e of edges){
+
+        let x=find(parent,e.u);
+        let y=find(parent,e.v);
+
+        if(x!=y){
+
+            result.push(e);
+
+            cost+=e.w;
+
+            union(parent,rank,x,y);
+
+        }
+
+    }
+
+    let out="===== Kruskal MST =====\n\n";
+
+    result.forEach(e=>{
+
+        out+=`${e.u} - ${e.v}   Weight=${e.w}\n`;
+
+    });
+
+    out+="\nTotal Cost = "+cost;
+
+    document.getElementById("output").innerText=out;
+
+}
+
+//----------------------
+// Prim
+//----------------------
+
+function runPrim(){
+
+    let V=parseInt(document.getElementById("vertices").value);
+
+    let edges=getEdges();
+
+    let graph=[];
+
+    for(let i=0;i<V;i++)
+        graph[i]=[];
+
+    edges.forEach(e=>{
+
+        graph[e.u].push([e.v,e.w]);
+        graph[e.v].push([e.u,e.w]);
+
+    });
+
+    let selected=new Array(V).fill(false);
+
+    selected[0]=true;
+
+    let count=0;
+    let cost=0;
+
+    let out="===== Prim MST =====\n\n";
+
+    while(count<V-1){
+
+        let min=999999;
+
+        let x=0;
+        let y=0;
+
+        for(let i=0;i<V;i++){
+
+            if(selected[i]){
+
+                for(let edge of graph[i]){
+
+                    let v=edge[0];
+                    let w=edge[1];
+
+                    if(!selected[v] && w<min){
+
+                        min=w;
+                        x=i;
+                        y=v;
+
+                    }
+
+                }
+
+            }
+
+        }
+
+        out+=`${x} - ${y}   Weight=${min}\n`;
+
+        cost+=min;
+
+        selected[y]=true;
+
+        count++;
+
+    }
+
+    out+="\nTotal Cost = "+cost;
+
+    document.getElementById("output").innerText=out;
+
+}
+
+</script>
+
+</body>
+</html>
